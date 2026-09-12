@@ -3,7 +3,7 @@
 # NOTES
 
 ## Time Spent
-- Approx. **X hours total** spread across several days.  
+- Approx. **9 hours total** spread across several days.  
 - Majority of time on ingestion script and dbt models.  
 - Additional effort on Airflow DAG setup and notebook walkthrough.
 
