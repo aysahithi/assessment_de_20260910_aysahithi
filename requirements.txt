@@ -8,3 +8,4 @@ tenacity==9.0.0
 pandas==2.2.3
 jupyterlab==4.3.4
 nbconvert==7.16.4
+matplotlib

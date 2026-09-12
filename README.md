@@ -55,8 +55,14 @@ Notebook: runs every stage, shows the results, explains the choices
 - Demonstrates re-run safety (load same date twice, counts unchanged).  
 - Queries the mart and shows a business-friendly result.  
 - Markdown cells explain design choices.
+## Notebooks
+
+- `notebooks/walkthrough.ipynb` → original development walkthrough with explanations and outputs.
+- `notebooks/walkthrough.reproduced.ipynb` → generated automatically via `make reproduce` to validate reproducibility.
 
 ---
+NOTE:`make reproduce` executes the walkthrough notebook headlessly and writes `notebooks/walkthrough.reproduced.ipynb` as proof of reproducibility.
+
 
 ## Notes
 
