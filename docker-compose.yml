@@ -17,9 +17,10 @@ services:
       retries: 20
 
   airflow:
+    #image: apache/airflow:2.7.0
     build:
       context: .
-      dockerfile: docker/airflow.Dockerfile
+      dockerfile: Dockerfile.airflow
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,9 +50,9 @@ services:
   # Same image and environment as Airflow, so the notebook imports the same code and
   # talks to the same database. http://localhost:8888
   jupyter:
-    build:
-      context: .
-      dockerfile: docker/airflow.Dockerfile
+    image: jupyter/base-notebook:latest
+      # context: .
+      # dockerfile: docker/airflow.Dockerfile
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,4 @@
+FROM apache/airflow:2.7.0
+
+# Install dbt with Postgres adapter
+RUN pip install dbt-core dbt-postgres
