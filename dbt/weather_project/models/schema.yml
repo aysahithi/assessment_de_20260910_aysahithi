@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: public
+    tables:
+      - name: raw_weather
+
+models:
+  - name: stg_weather
+    description: "Staging model for raw weather data"
+    columns:
+      - name: city
+        tests: [not_null]
+      - name: weather_date
+        tests: [not_null, unique]
+
+  - name: mart_weather
+    description: "Mart model aggregating daily weather per city"
+    columns:
+      - name: city
+        tests: [not_null]
+      - name: weather_date
+        tests: [not_null, unique]
