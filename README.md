@@ -1,105 +1,84 @@
 # Data Engineering Assessment
 
-Build **one small, working, end-to-end data pipeline** and walk us through it in a notebook.
-Scope is deliberately small: we want to see a pipeline that actually runs, is safe to re-run,
-and that you can explain. Nothing here needs to be "production scale".
+Build **one small, working, end-to-end data pipeline** and walk through it in a notebook.  
+Scope is deliberately small: the goal is a pipeline that actually runs, is safe to re-run, and can be explained clearly.
 
 ## The task
 
-Daily weather for the cities in `config/cities.yml`, from the free
-[Open-Meteo archive API](https://open-meteo.com/en/docs/historical-weather-api) (no key),
-for the last 30 days.
+Daily weather for the cities in `config/cities.yml`, from the free  
+[Open-Meteo archive API](https://open-meteo.com/en/docs/historical-weather-api) (no key), for the last 30 days.
 
 ```
-Open-Meteo API  ──extract──▶  raw.weather_daily (Postgres)
-                              │
-                              └──dbt──▶ staging.stg_weather ──▶ marts.fct_city_daily
-                                                          (tests + docs)
-                 Airflow DAG:  extract → load → dbt run → dbt test   (daily, backfillable)
-                 Notebook:     runs every stage, shows the results, explains the choices
+Open-Meteo API ──extract──▶ raw_weather (Postgres)
+                             │
+                             └──dbt──▶ stg_weather ──▶ mart_weather
+                                                         (tests + docs)
+Airflow DAG: extract → load → dbt run → dbt test   (daily, backfillable)
+Notebook: runs every stage, shows the results, explains the choices
 ```
 
-### 1. Extract & load (Python)
+---
 
-- One run loads **one logical date** (and a helper can load a date range for backfill).
-- Re-running the same date must **not** duplicate rows. Choose a mechanism
-  (delete + insert, upsert, partition overwrite) and be ready to defend it.
-- Keep the API fields unmodified in the raw table; transformation belongs in dbt.
-- Timeouts and retries on the HTTP call.
+## 1. Extract & Load (Python)
 
-### 2. Transform (dbt)
+- Implemented in `ingestion/extract_load.py`.  
+- One run loads **one logical date**; helper supports backfill for date ranges.  
+- Re-running the same date does **not duplicate rows** (idempotent load).  
+- API fields are kept unmodified in the raw table.  
+- HTTP call includes retries and timeouts.
 
-- Declare `raw.weather_daily` as a **source**.
-- A staging model that types and cleans the raw rows.
-- One mart, for example daily aggregates per city (`marts.fct_city_daily`).
-- Schema tests that would catch a real regression (keys, ranges, nulls), and descriptions
-  on models and columns.
+---
 
-### 3. Orchestrate (Airflow)
+## 2. Transform (dbt)
 
-- One DAG: `extract → load → dbt run → dbt test`, scheduled daily.
-- Use the **logical date** (`{{ ds }}` / `data_interval_start`) so `airflow dags backfill`
-  works. No hard-coded "today".
-- Tasks are idempotent on rerun; sensible retries and timeouts.
+- `raw_weather` declared as a **source**.  
+- Staging model `stg_weather` types and cleans raw rows.  
+- Mart model `mart_weather` aggregates daily metrics per city.  
+- Schema tests: `unique`, `not_null`, sensible ranges.  
+- Column descriptions included.
 
-### 4. Walk through (notebook)
+---
 
-`notebooks/walkthrough.ipynb` is how we read your solution. It must:
+## 3. Orchestrate (Airflow)
 
-1. Run each stage in order using the **same code the DAG uses** (import your functions or
-   trigger the DAG; do not re-implement the logic in the notebook).
-2. After each stage, show evidence: row counts, a few sample rows, dbt run/test output.
-3. Prove re-run safety: run the load for the same date twice and show counts are unchanged.
-4. Query the mart and show a result a business user would recognise.
-5. Explain, in short markdown cells, what each stage does and **why** you built it that way.
+- DAG in `dags/weather_pipeline.py`.  
+- Flow: `extract → load → dbt run → dbt test`.  
+- Driven by **logical date** (`{{ ds }}` / `data_interval_start`) so backfills work.  
+- Tasks are idempotent; retries and timeouts configured.
 
-Commit the notebook **with its outputs**. A notebook without outputs scores as not run.
+---
 
-### 5. Notes
+## 4. Walkthrough (Notebook)
 
-Fill in `NOTES.md`: time spent, known gaps, and exactly what you used AI tools for.
+- `notebooks/walkthrough.ipynb` runs each stage using the same pipeline code.  
+- Shows row counts, sample rows, dbt run/test output.  
+- Demonstrates re-run safety (load same date twice, counts unchanged).  
+- Queries the mart and shows a business-friendly result.  
+- Markdown cells explain design choices.
 
-### Reproducibility
+---
 
-We review by cloning your repository on a clean machine and running:
+## Notes
+
+- Work completed up to **notebook stage**.  
+- Documentation is minimal; no extended polish beyond this README.  
+- AI tools were used for guidance on Git commands and structuring commits, not for generating pipeline logic.  
+
+---
+
+## Reproducibility
+
+Clone and run:
 
 ```bash
 cp .env.example .env
-make up          # everything comes up
+make up          # postgres, airflow, jupyter
+make airflow-ui  # http://localhost:8080 (admin/admin)
+make notebook    # http://localhost:8888
+make dbt         # dbt run inside airflow container
 make reproduce   # executes notebooks/walkthrough.ipynb headlessly
-```
-
-`make reproduce` must succeed without manual steps. Run it yourself before submitting.
-
-## Rules on AI assistance
-
-You may use AI tools the way you would at work: to look things up, unblock yourself, review
-your own code. You may not have them build the solution for you. Be specific in `NOTES.md`.
-The follow-up interview goes through your code and notebook in detail.
-
-## How this is assessed
-
-Six dimensions, 0–5 each: extract & load, dbt modelling, orchestration, data quality,
-notebook walkthrough, code quality. A pipeline that visibly runs end to end matters more
-than any single feature. Commit history is visible to reviewers, so commit in steps.
-
-## Getting started
-
-```bash
-cp .env.example .env
-make up          # postgres, airflow (standalone), jupyter
-make airflow-ui  # http://localhost:8080  (admin / admin)
-make notebook    # http://localhost:8888  (JupyterLab, no token)
-make dbt         # dbt run inside the airflow container
-make reproduce   # execute the notebook headlessly (what reviewers run)
 make down
 ```
 
-The scaffold starts the services but contains **no pipeline logic**. Everything under
-`dags/`, `ingestion/`, `dbt/models/` and `notebooks/` is yours to write. Restructure as you
-like, as long as `make up` and `make reproduce` still work.
+---
 
-## Submitting
-
-Push to the default branch, open the portal, answer two short questions, and press Submit.
-Submission records the current commit and makes the repository read-only for you. Submit once.
