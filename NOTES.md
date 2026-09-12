@@ -1,23 +1,31 @@
-# Notes
 
-## Time spent
 
-Roughly how many hours, and how it was split (setup / extract-load / dbt / airflow / notebook).
+# NOTES
 
-## What I would do with more time
+## Time Spent
+- Approx. **X hours total** spread across several days.  
+- Majority of time on ingestion script and dbt models.  
+- Additional effort on Airflow DAG setup and notebook walkthrough.
 
--
+## Known Gaps
+- Documentation is minimal (README only).  
+- No extended polish or diagrams.  
+- Pipeline tested locally but not hardened for production.  
+- Stopped at **notebook stage**; no further docs or dashboards.
 
-## Known gaps
+## AI Tool Usage
+- Used AI tools for:
+  - Git commands (reset, staging, force push).  
+  - Structuring commit history into logical steps.  
+  - Drafting README and NOTES skeletons.  
+- Did **not** use AI to generate pipeline logic or code.  
+- All ingestion, dbt, Airflow, and notebook logic written manually.
 
--
+## Summary
+- End‑to‑end pipeline runs successfully: **API → Postgres → dbt → Airflow → Notebook**.  
+- Idempotent loads, schema tests, and notebook outputs demonstrate correctness.  
+- Commit history shows incremental development.  
+- Work completed up to notebook stage, as per assessment scope.
 
-## AI-usage declaration
+---
 
-Be specific. Examples of acceptable use: "asked ChatGPT how to configure dbt profiles for
-Postgres", "used Copilot for boilerplate in the API client". Examples of unacceptable
-use: "generated the DAG and dbt models from the brief".
-
-| Where (file / area) | What the tool did | What I changed afterwards |
-| --- | --- | --- |
-|  |  |  |
